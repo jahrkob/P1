@@ -1,3 +1,3 @@
 # P1
 
-Dette repository indeholder vores COMTEK P1-projekt “Programmering og systemudvikling”.
+This repository contains our group’s COMTEK P1 project “Programming and System Development”.
