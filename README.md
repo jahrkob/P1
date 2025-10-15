@@ -1,3 +1,3 @@
 # P1
 
-Our new project!! 🥳🎉
+Dette repository indeholder vores COMTEK P1-projekt “Programmering og systemudvikling”.
