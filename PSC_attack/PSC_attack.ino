@@ -13,7 +13,7 @@ void victoryBuzz(int buzzerPin) {
   delay(2);
   digitalWrite(buzzerPin, LOW);
 }
-//hej
+
 void wrongBuzz(int buzzerPin) {
   digitalWrite(buzzerPin, HIGH);
   delay(2);
