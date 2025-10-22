@@ -85,7 +85,7 @@ void loop() {
       Serial.println("You in");
       buttonBuzz(buzzer);
     } else {
-      Serial.println("WRONG! DUMBASS");
+      Serial.println("WRONG!");
       buttonBuzz(buzzer);
     }
     curPass = "";
