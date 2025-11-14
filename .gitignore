@@ -1,0 +1,49 @@
+# Arduino build artifacts
+*.hex
+*.elf
+*.map
+*.bin
+*.eep
+*.lss
+*.sym
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.vscode/
+.clang_complete
+.gcc-flags.json
+
+# Build directories
+build/
+.build/
+*.build/
+
+# IDE files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Python (for build scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Nordic SDK artifacts
+*.jlink
+*.uvguix.*
+*.bak
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# CodeQL
+_codeql_detected_source_root
