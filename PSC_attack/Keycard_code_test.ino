@@ -112,15 +112,25 @@ void loop() {
     known_cards(strID, pass);
     Serial.print("Password set to: ");
     Serial.println(pass);
-  } else if (known_cards[strID] == getInputPass()) {  //put your own tap card key;
+    return;
+  }
+  String pass = getInputPass();
+  digitalWrite(BuzzerPin, HIGH);
+  delay (5);
+  digitalWrite(BuzzerPin, LOW);
+  if (known_cards[strID] == pass) {  //put your own tap card key;
     Serial.println("********************");
     Serial.println("**Adgang Tilladt**");
     Serial.println("********************");
-    tone(BuzzerPin,700,700);
+    digitalWrite(BuzzerPin, HIGH);
+    delay (5);
+    digitalWrite(BuzzerPin, LOW);
   } else {
     Serial.println("****************");
     Serial.println("**Adgang Nægtet**");
     Serial.println("****************");
-    tone(BuzzerPin,400,1000);
+    digitalWrite(BuzzerPin, HIGH);
+    delay (5);
+    digitalWrite(BuzzerPin, LOW);
   }
 }
