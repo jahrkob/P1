@@ -2,8 +2,6 @@ import numpy as np
 import doctest
 import math
 
-
-
 class GF2_8:
     def __init__(self, value: int):
         # Prime: 2
@@ -60,7 +58,9 @@ def modPoly(poly : int | GF2_8):
         while math.log2(int(poly)) >= 8:
             shiftBy = math.floor(math.log2(int(poly)))-8
             poly -= (0b100011011 << shiftBy)
-    elif type(poly) == int:
+    else:
+        poly = int(poly)
+    if type(poly) == int:
         while math.log2(int(poly)) >= 8:
             shiftBy = math.floor(math.log2(int(poly)))-8
             poly = poly ^ (0b100011011 << shiftBy)
@@ -68,34 +68,40 @@ def modPoly(poly : int | GF2_8):
         raise("Unsupported argument type")
     return poly
 
-# def aes_mix_col(hex_input):
-#     aes_standard = np.matrix([
-#         [2,3,1,1],
-#         [1,2,3,1],
-#         [1,1,2,3],
-#         [3,1,1,2]
-#     ])
-
-#     np.set_printoptions(formatter={'int':hex})
-
-#     input_bytes = hex_input.to_bytes(16)
-#     input_bytes = bytearray(input_bytes)
-
-#     result = np.matrix(
-#         input_bytes
-#     ) # creates a 1 dimeensional matrix
-#     print()
-#     result = result.reshape((4,4)) # makes the matrix 2 dimensional
-#     result = np.flip(result,axis=1) # part 1 of correcting the matrix layout
-#     result = np.rot90(result) # part 2 of correcting the matrix layout
-
-#     print(result)
-#     return result*aes_standard
-
-# #print(aes_mix_col(0x00112233445566778899aabbccddeeff))
-
 print(doctest.testmod())
 
-print(
-    GF2_8(0b11101101) * GF2_8(0b110010)
-)
+class AES_Array:
+    def __init__(self,input):
+        self.aes_standard = [
+            [GF2_8(2),GF2_8(3),GF2_8(1),GF2_8(1)],
+            [GF2_8(1),GF2_8(2),GF2_8(3),GF2_8(1)],
+            [GF2_8(1),GF2_8(1),GF2_8(2),GF2_8(3)],
+            [GF2_8(3),GF2_8(1),GF2_8(1),GF2_8(2)]
+        ]
+
+    def __mul__(self, other):
+        return 2
+
+    def EncryptBlock(self, block:int):
+        blockString = hex(block).strip('x')[1]
+        if len(blockString) != 32:
+            raise("invalid input length")
+        self.table = [
+            [blockString[0:2],blockString[8:10],blockString[16:18],blockString[24:26]],
+            [blockString[2:4],blockString[10:12],blockString[18:20],blockString[26:28]],
+            [blockString[4:6],blockString[12:14],blockString[20:22],blockString[28:30]],
+            [blockString[6:8],blockString[14:16],blockString[22:24],blockString[30:]]
+        ]
+        print("Still lacks encryption")
+
+    def aes_mix_col(hex_input : list[list[GF2_8]]):
+        aes_standard = [
+            [GF2_8(2),GF2_8(3),GF2_8(1),GF2_8(1)],
+            [GF2_8(1),GF2_8(2),GF2_8(3),GF2_8(1)],
+            [GF2_8(1),GF2_8(1),GF2_8(2),GF2_8(3)],
+            [GF2_8(3),GF2_8(1),GF2_8(1),GF2_8(2)]
+        ]
+
+
+
+print()
