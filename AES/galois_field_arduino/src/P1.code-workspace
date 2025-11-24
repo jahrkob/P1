@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"name": "galois_field_arduino",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}

@@ -103,4 +103,4 @@ def aes_mix_col(hex_input):
 
 print(aes_mix_col(0x00112233445566778899aabbccddeeff))
 
-print()
+print(GF2_8(0b1100_1010)*GF2_8(0b0100_1110))
