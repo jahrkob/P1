@@ -1,4 +1,4 @@
-import numpy as np
+
 import doctest
 import math
 
@@ -58,58 +58,45 @@ def modPoly(poly : int):
     'x^7      + x^5 + x^4                + x^0'
     """
     poly = int(poly)
-    if type(poly) == int:
+    if poly == 0:
+        return 0
+    elif type(poly) == int:
         while math.log2(int(poly)) >= 8:
             shiftBy = math.floor(math.log2(int(poly)))-8
             poly = poly ^ (0b100011011 << shiftBy)
+            if poly == 0:
+                break
     else:
         raise("Unsupported argument type")
     return poly
 
-print(doctest.testmod())
-
-def aes_mix_col(hex_input):
-    aes_standard = np.matrix([
-        [2,3,1,1],
-        [1,2,3,1],
-        [1,1,2,3],
-        [3,1,1,2]
-    ])
-    np.set_printoptions(formatter={'int':hex})
-
-    np.set_printoptions(formatter={'int':hex})
-    input_bytes = hex_input.to_bytes(16)
-    input_bytes = bytearray(input_bytes)
-
-    input_bytes = hex_input.to_bytes(16)
-    input_bytes = bytearray(input_bytes)
-    result = np.matrix(
-        input_bytes
-    ) # creates a 1 dimeensional matrix
-    print()
-    result = result.reshape((4,4)) # makes the matrix 2 dimensional
-    result = np.flip(result,axis=1) # part 1 of correcting the matrix layout
-    result = np.rot90(result) # part 2 of correcting the matrix layout
-
-    result = np.matrix(
-        input_bytes
-    ) # creates a 1 dimeensional matrix
-    print()
-    result = result.reshape((4,4)) # makes the matrix 2 dimensional
-    result = np.flip(result,axis=1) # part 1 of correcting the matrix layout
-    result = np.rot90(result) # part 2 of correcting the matrix layout
-
-    print(result)
-    r = (result*aes_standard).tolist()
+def mix_col(col):
+    """
+    >>> mix_col([0x63,0x2F,0xAF,0xA2])
+    [0xba, 0x75, 0xf4, 0x7a]
+    """
     return [
-        [GF2_8(r[0][0]),GF2_8(r[0][1]),GF2_8(r[0][2]),GF2_8(r[0][3])],
-        [GF2_8(r[1][0]),GF2_8(r[1][1]),GF2_8(r[1][2]),GF2_8(r[1][3])],
-        [GF2_8(r[2][0]),GF2_8(r[2][1]),GF2_8(r[2][2]),GF2_8(r[2][3])],
-        [GF2_8(r[3][0]),GF2_8(r[3][1]),GF2_8(r[3][2]),GF2_8(r[3][3])]
+        2*GF2_8(col[0])+3*GF2_8(col[1])+1*GF2_8(col[2])+1*GF2_8(col[3]),
+        1*GF2_8(col[0])+2*GF2_8(col[1])+3*GF2_8(col[2])+1*GF2_8(col[3]),
+        1*GF2_8(col[0])+1*GF2_8(col[1])+2*GF2_8(col[2])+3*GF2_8(col[3]),
+        3*GF2_8(col[0])+1*GF2_8(col[1])+1*GF2_8(col[2])+2*GF2_8(col[3])
     ]
 
+def aes_mix_col(hex_input:int):
+    """
+    >>> aes_mix_col(0x632FAFA2_EB93C720_9F92ABCB_A0C0302B)
+    [0xba, 0x75, 0xf4, 0x7a, 0x84, 0xa4, 0x8d, 0x32, 0xe8, 0x8d, 0x6, 0xe, 0x1b, 0x40, 0x7d, 0x5d]
+    """
+    
+    r = list(hex_input.to_bytes(16))
+    # print(list(hex(i) for i in r[0:4]))
+    # print(list(hex(i) for i in r[4:8]))
+    # print(list(hex(i) for i in r[8:12]))
+    # print(list(hex(i) for i in r[12:]))
+
+    return mix_col(r[0:4]) + mix_col(r[4:8]) + mix_col(r[8:12]) + mix_col(r[12:])
 
 
-print(aes_mix_col(0x00112233445566778899aabbccddeeff))
+if __name__ == '__main__':
+    print(doctest.testmod())
 
-print(GF2_8(0b1100_1010)*GF2_8(0b0100_1110))
