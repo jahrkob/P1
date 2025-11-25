@@ -7,7 +7,7 @@ class GF2_8:
         # Prime: 2
         # Extension degree 8
         self.irreduciblePolynomial = 0b100011011 # x^8+x^4+x^3+x+1
-        self.value = value
+        self.value = modPoly(value)
 
     def __add__(self, other):
         return GF2_8(modPoly(int(self)^int(other)))
@@ -32,6 +32,9 @@ class GF2_8:
             else:
                 finalString += "    " + len(str(exponent)) * ' ' # exponents can be several digits long
         return finalString.strip() # remove the leading and trailing spaces
+    
+    def __repr__(self):
+        return hex(self.value)
 
     def __mul__(self, other):
         SoP = 0
@@ -97,7 +100,13 @@ def aes_mix_col(hex_input):
     result = np.rot90(result) # part 2 of correcting the matrix layout
 
     print(result)
-    return result*aes_standard
+    r = (result*aes_standard).tolist()
+    return [
+        [GF2_8(r[0][0]),GF2_8(r[0][1]),GF2_8(r[0][2]),GF2_8(r[0][3])],
+        [GF2_8(r[1][0]),GF2_8(r[1][1]),GF2_8(r[1][2]),GF2_8(r[1][3])],
+        [GF2_8(r[2][0]),GF2_8(r[2][1]),GF2_8(r[2][2]),GF2_8(r[2][3])],
+        [GF2_8(r[3][0]),GF2_8(r[3][1]),GF2_8(r[3][2]),GF2_8(r[3][3])]
+    ]
 
 
 
