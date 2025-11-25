@@ -6,7 +6,6 @@ class GF2_8:
     def __init__(self, value: int):
         # Prime: 2
         # Extension degree 8
-        self.irreduciblePolynomial = 0b100011011 # x^8+x^4+x^3+x+1
         self.value = modPoly(value)
 
     def __add__(self, other):
@@ -48,6 +47,8 @@ class GF2_8:
 
 def modPoly(poly : int):
     """
+    :Description: Used in GF2_8 to reduce by the aes standard polynomial
+
     The examples showcase both multiplication AND modPoly at the same time
     Examples:
     >>> str(GF2_8(modPoly(GF2_8(0b10100101) * GF2_8(0b110))))
@@ -71,10 +72,6 @@ def modPoly(poly : int):
     return poly
 
 def mix_col(col):
-    """
-    >>> mix_col([0x63,0x2F,0xAF,0xA2])
-    [0xba, 0x75, 0xf4, 0x7a]
-    """
     return [
         2*GF2_8(col[0])+3*GF2_8(col[1])+1*GF2_8(col[2])+1*GF2_8(col[3]),
         1*GF2_8(col[0])+2*GF2_8(col[1])+3*GF2_8(col[2])+1*GF2_8(col[3]),
@@ -87,7 +84,7 @@ def aes_mix_col(hex_input:int):
     >>> aes_mix_col(0x632FAFA2_EB93C720_9F92ABCB_A0C0302B)
     [0xba, 0x75, 0xf4, 0x7a, 0x84, 0xa4, 0x8d, 0x32, 0xe8, 0x8d, 0x6, 0xe, 0x1b, 0x40, 0x7d, 0x5d]
     """
-    
+
     r = list(hex_input.to_bytes(16))
     # print(list(hex(i) for i in r[0:4]))
     # print(list(hex(i) for i in r[4:8]))
@@ -96,7 +93,5 @@ def aes_mix_col(hex_input:int):
 
     return mix_col(r[0:4]) + mix_col(r[4:8]) + mix_col(r[8:12]) + mix_col(r[12:])
 
-
 if __name__ == '__main__':
     print(doctest.testmod())
-
