@@ -2,12 +2,6 @@
 #include <math.h>
 
 // put function declarations here:
-union intType
-{ 
-    int a;
-    GF2_8 b;
-};
-
 struct GF2_8 {
   int value;
   GF2_8(int inputValue)
@@ -36,6 +30,14 @@ struct GF2_8 {
   }
 
 };
+
+int modPoly(int poly) {
+  if (poly == 0) {
+    return 0
+  } else {
+    while (log10(poly)/log10(2) >= 8)
+  }
+}
 
 
 void setup() {
