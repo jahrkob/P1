@@ -11,7 +11,7 @@ def takeInput(key = 0x0102030405060708):
         # <-----------------------------------------------
 
 def addKey(text,key):
-    return [text, key ]
+    return text^key
 
 def splitIntoChunks(text:str, chunkSize : int = 16):
     """

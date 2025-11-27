@@ -1,14 +1,21 @@
 
 import doctest
 
-def shiftRow(byteList):
+def listToInt(a):
+    """
+    Accepts a list with 4 bytes and makes it into one 4 byte integer
+    """
+    return a[0]<<12 | a[1]<<8 | a[2]<<4 | a[3]
+
+def shiftRow(bigInt:int):
     """
     :Input: Takes a bytelist and outputs a bytelist
 
     >>> shiftRow([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
     [0, 1, 2, 3, 5, 6, 7, 4, 10, 11, 8, 9, 15, 12, 13, 14]
     """
-    return byteList[0:4]+circularShiftLeft(byteList[4:8],1)+circularShiftLeft(byteList[8:12],2)+circularShiftLeft(byteList[12:16],3)
+    byteList = list(bigInt.to_bytes())
+    return listToInt(byteList[0:4]+circularShiftLeft(byteList[4:8],1)+circularShiftLeft(byteList[8:12],2)+circularShiftLeft(byteList[12:16],3))
 
 def circularShiftLeft(listThing:list, by = 1):
     """

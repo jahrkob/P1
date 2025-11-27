@@ -20,16 +20,13 @@ subBytesTable = [
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 ]
 
-def subBytes(byte:int):
+def subBytes(big16inchInteger:int):
     """
-    >>> hex(subBytes(0x11))
-    '0x82'
-    >>> hex(subBytes(0x97))
-    '0x88'
-    >>> hex(subBytes(0x1d))
-    '0xa4'
+    >>> hex(subBytes(0x0123456789abcdef0123456789abcdef))
+    '0x7c266e85a762bddf7c266e85a762bddf'
     """
-    return subBytesTable[byte]
+    byteList = [subBytesTable[i]<<(120-index*8) for index, i in enumerate(list(big16inchInteger.to_bytes(16)))]
+    return sum(byteList)
     
 if __name__ == '__main__':
     print(doctest.testmod())
