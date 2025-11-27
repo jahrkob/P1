@@ -1,6 +1,7 @@
 
 import doctest
 import math
+from shiftRow import listToInt
 
 class GF2_8:
     def __init__(self, value: int):
@@ -72,6 +73,10 @@ def modPoly(poly : int):
     return poly
 
 def mix_col(col):
+    """
+    >>> mix_col([0x87, 0x6e, 0x46, 0xa6])
+    [0x47, 0x37, 0x94, 0xed]
+    """
     return [
         2*GF2_8(col[0])+3*GF2_8(col[1])+1*GF2_8(col[2])+1*GF2_8(col[3]),
         1*GF2_8(col[0])+2*GF2_8(col[1])+3*GF2_8(col[2])+1*GF2_8(col[3]),
@@ -79,10 +84,22 @@ def mix_col(col):
         3*GF2_8(col[0])+1*GF2_8(col[1])+1*GF2_8(col[2])+2*GF2_8(col[3])
     ]
 
+def inv_mix_col(col):
+    """
+    >>> inv_mix_col([0x47,0x37,0x94,0xed])
+    [0x87, 0x6e, 0x46, 0xa6]
+    """
+    return [
+        0xe*GF2_8(col[0])+0xb*GF2_8(col[1])+0xd*GF2_8(col[2])+0x9*GF2_8(col[3]),
+        0x9*GF2_8(col[0])+0xe*GF2_8(col[1])+0xb*GF2_8(col[2])+0xd*GF2_8(col[3]),
+        0xd*GF2_8(col[0])+0x9*GF2_8(col[1])+0xe*GF2_8(col[2])+0xb*GF2_8(col[3]),
+        0xb*GF2_8(col[0])+0xd*GF2_8(col[1])+0x9*GF2_8(col[2])+0xe*GF2_8(col[3])
+    ]
+
 def aes_mix_col(hex_input:int):
     """
-    >>> aes_mix_col(0x632FAFA2_EB93C720_9F92ABCB_A0C0302B)
-    [0xba, 0x75, 0xf4, 0x7a, 0x84, 0xa4, 0x8d, 0x32, 0xe8, 0x8d, 0x6, 0xe, 0x1b, 0x40, 0x7d, 0x5d]
+    >>> hex(aes_mix_col(0x632fafa2eb93c7209f92abcba0c0302b))
+    '0xba75f47a84a48d32e88d060e1b407d5d'
     """
 
     r = list(hex_input.to_bytes(16))
@@ -91,7 +108,16 @@ def aes_mix_col(hex_input:int):
     # print(list(hex(i) for i in r[8:12]))
     # print(list(hex(i) for i in r[12:]))
 
-    return mix_col(r[0:4]) + mix_col(r[4:8]) + mix_col(r[8:12]) + mix_col(r[12:])
+    return listToInt([int(i) for i in mix_col(r[0:4]) + mix_col(r[4:8]) + mix_col(r[8:12]) + mix_col(r[12:])],16)
+
+def aes_inv_mix_col(hex_input:int):
+    """
+    >>> hex(aes_inv_mix_col(0xba75f47a84a48d32e88d060e1b407d5d))
+    '0x632fafa2eb93c7209f92abcba0c0302b'
+    """
+    r = list(hex_input.to_bytes(16))
+
+    return listToInt([int(i) for i in inv_mix_col(r[0:4]) + inv_mix_col(r[4:8]) + inv_mix_col(r[8:12]) + inv_mix_col(r[12:])],16)
 
 if __name__ == '__main__':
     print(doctest.testmod())
