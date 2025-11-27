@@ -1,34 +1,35 @@
 
-from shiftRow import shiftRow
+from shiftRow import shiftRow,listToInt
 from keyExpansion import keyExpansion
 from mixColumn import aes_mix_col
 from subBytes import *
 from addRoundKey import *
 
-def listToInt(a):
+def singleRound(text:str,initialKey:int):
     """
-    Accepts a list with 4 bytes and makes it into one 4 byte integer
+    This is NOT the encryption the sole purpose of this is to simulate ONE round:
+    Examples:
+    >>> hex(singleRound('Two One Nine Two',0x5468617473206D79204B756E67204675))
+    '0x5847088b15b61cba59d4e2e8cd39dfce'
     """
-    return a[0]<<12 | a[1]<<8 | a[2]<<4 | a[3]
-
-def singleRound(text,key):
-    keys = keyExpansion(key)
-    a = addKey(text,key)
-    print(hex(a))
+    #print(hex(text))
+    textIntFormat = listToInt(list(text.encode()),16)
+    keys = keyExpansion(initialKey)
+    a = addKey(textIntFormat,initialKey)
+    #print(hex(a))
     b = subBytes(a)
-    print(hex(b))
+    #print(hex(b))
     c = shiftRow(b)
-    print(hex(c))
+    #print(hex(c))
     d = aes_mix_col(c)
-    print(hex(d))
+    #print(hex(d))
     e = addKey(d,keys[1])
-    print(hex(e))
-
-print([hex(i) for i in keyExpansion(0x5468617473206D79204B756E67204675)])
+    #print(hex(e))
+    return e
 
 key = 0x5468617473206D79204B756E67204675
-initialText = 'Two One Nine Two'.encode()
-singleRound(listToInt(list(initialText)),key)
+initialText = 'Two One Nine Two'
+singleRound(initialText,key)
 
-
-
+if __name__ == '__main__':
+    print(doctest.testmod())

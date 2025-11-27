@@ -7,6 +7,8 @@ def listToInt(a,bytes):
     Examples:
     >>> hex(listToInt([1,2,3,4],4))
     '0x1020304'
+    >>> hex(listToInt([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],16))
+    '0x102030405060708090a0b0c0d0e0f10'
     """
     if (len(a) != bytes):
         raise('ListToInt only accepts a list with a length equal to amount of bytes integer should have')
@@ -20,11 +22,15 @@ def listToInt(a,bytes):
 
 def shiftRow(bigInt:int):
     """
-    >>> hex(shiftRow(0x0102030405060708090a0b0c0d0e0f))
-    '0x10203050607040a0b08090f0c0d0e'
+    remember that this accepts one big int and not rows
+    >>> hex(shiftRow(0x63c0ab20eb2f30cb9f93af2ba092c7a2))
+    '0x632fafa2eb93c7209f92abcba0c0302b'
     """
-    byteList = list(bigInt.to_bytes(16))
-    return listToInt(byteList[0:4] + circularShiftLeft(byteList[4:8],1)+circularShiftLeft(byteList[8:12],2)+circularShiftLeft(byteList[12:16],3),16)
+    BL = list(bigInt.to_bytes(16)) # ByteList
+    return listToInt([BL[0],BL[5],BL[10],BL[15],
+            BL[4],BL[9],BL[14],BL[3],
+            BL[8],BL[13],BL[2],BL[7],
+            BL[12],BL[1],BL[6],BL[11]],16)
 
 def circularShiftLeft(listThing:list, by = 1):
     """

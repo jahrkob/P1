@@ -11,6 +11,11 @@ def takeInput(key = 0x0102030405060708):
         # <-----------------------------------------------
 
 def addKey(text,key):
+    """
+    Examples:
+    >>> hex(addKey(0x54776f204f6e65204e696e652054776f,0x5468617473206d79204b756e67204675))
+    '0x1f0e543c4e08596e221b0b4774311a'
+    """
     return text^key
 
 def splitIntoChunks(text:str, chunkSize : int = 16):

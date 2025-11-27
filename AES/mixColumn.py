@@ -82,8 +82,8 @@ def mix_col(col):
 
 def aes_mix_col(hex_input:int):
     """
-    >>> aes_mix_col(0x632FAFA2_EB93C720_9F92ABCB_A0C0302B)
-    [0xba, 0x75, 0xf4, 0x7a, 0x84, 0xa4, 0x8d, 0x32, 0xe8, 0x8d, 0x6, 0xe, 0x1b, 0x40, 0x7d, 0x5d]
+    >>> hex(aes_mix_col(0x632FAFA2_EB93C720_9F92ABCB_A0C0302B))
+    '0xba75f47a84a48d32e88d060e1b407d5d'
     """
 
     r = list(hex_input.to_bytes(16))
@@ -92,7 +92,7 @@ def aes_mix_col(hex_input:int):
     # print(list(hex(i) for i in r[8:12]))
     # print(list(hex(i) for i in r[12:]))
 
-    return mix_col(r[0:4]) + mix_col(r[4:8]) + mix_col(r[8:12]) + mix_col(r[12:])
+    return listToInt([int(i) for i in mix_col(r[0:4]) + mix_col(r[4:8]) + mix_col(r[8:12]) + mix_col(r[12:])],16)
 
 if __name__ == '__main__':
     print(doctest.testmod())
