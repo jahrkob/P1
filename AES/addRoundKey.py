@@ -24,15 +24,20 @@ def splitIntoChunks(text:str, chunkSize : int = 16):
     :param text: The text which will be split into chunks of 16 bytes
     :examples:
     >>> splitIntoChunks('1122334455667788aabbccddeeffgghha')
-    [b'1122334455667788', b'aabbccddeeffgghh', b'\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f']
+    ['1122334455667788', 'aabbccddeeffgghh', 'a\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f\\x0f']
+    >>> len(splitIntoChunks('1122334455667788aabbccddeeffgghha')[-1])
+    16
     >>> splitIntoChunks('ab')
-    [b'\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e']
+    ['ab\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e\\x0e']
     """
     uniformCharacterLength = text.encode() # convert string into utf-8 which has uniform character length of one byte
     split = [uniformCharacterLength[i:i+16] for i in range(0,len(uniformCharacterLength),16)] # split into 16 byte chunks
     paddingNeeded = chunkSize - len(split[-1]) # check how much padding is needed for last chunk
-    split[-1] = bytes([paddingNeeded]) * paddingNeeded # add the padding
-    return split
+    if paddingNeeded > 0:
+        split[-1] = split[-1] + bytes([paddingNeeded]) * paddingNeeded # add the padding
+    else:
+        split.append(bytes([16])*16) # from what i could see in https://anycript.com/crypto you have to add 16 bytes of padding if there would otherwise be none
+    return [i.decode() for i in split]
 
 if __name__ == '__main__':
     print(doctest.testmod())

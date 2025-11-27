@@ -5,7 +5,7 @@ from mixColumn import aes_mix_col
 from subBytes import *
 from addRoundKey import *
 
-def singleRound(text:str,initialKey:int):
+def singleRound(text:str,initialKey:int|str):
     """
     This is NOT the encryption the sole purpose of this is to simulate ONE round:
     Examples:
@@ -14,6 +14,8 @@ def singleRound(text:str,initialKey:int):
     """
     #print(hex(text))
     textIntFormat = listToInt(list(text.encode()),16)
+    if type(initialKey) != int:
+        initialKey.encode('ascii')
     keys = keyExpansion(initialKey)
     a = addKey(textIntFormat,initialKey)
     #print(hex(a))
@@ -27,9 +29,43 @@ def singleRound(text:str,initialKey:int):
     #print(hex(e))
     return e
 
-key = 0x5468617473206D79204B756E67204675
-initialText = 'Two One Nine Two'
-singleRound(initialText,key)
+def AES(text:str,initialKey:int,debug:bool = False):
+    """
+    Examples:
+    >>> AES('Two One Nine Two',0x5468617473206D79204B756E67204675,debug=True)
+    0x5847088b15b61cba59d4e2e8cd39dfce
+    0x43c6a9620e57c0c80908ebfe3df87f37
+    0x29c3505f571420f6402299b31a02d73a
+    ['0x29c3505f571420f6402299b31a02d73a',0xb3e46f11ba8d2b97c18769449a89e868]
+    """
+    encryptedText = []
+    for textChunk in splitIntoChunks(text):
+        textIntFormat = listToInt(list(textChunk.encode()),16)
+        keys = keyExpansion(initialKey)
+        #print([hex(i) for i in keys])
+        for round,key in enumerate(keys):
+            if round == 0:
+                a = addKey(textIntFormat,key)
+                continue
+            #print(hex(a))
+            a = subBytes(a)
+            #print(hex(a))
+            a = shiftRow(a)
+            #print(hex(a))
+            if round != 10:
+                a = aes_mix_col(a)
+                #print(hex(a))
+            a = addKey(a,key)
+            if debug and round in [1,2,10]:
+                print(hex(a))
+        encryptedText.append(hex(a))
+    return encryptedText
+
+
 
 if __name__ == '__main__':
     print(doctest.testmod())
+
+    key = 0x6162636465666768696a6b6C6D6E6F70
+    initialText = 'Two One Nine Two'
+    print(AES(initialText,key))
