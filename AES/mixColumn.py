@@ -1,6 +1,7 @@
 
 import doctest
 import math
+from shiftRow import listToInt
 
 class GF2_8:
     def __init__(self, value: int):
