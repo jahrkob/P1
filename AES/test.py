@@ -1,3 +1,9 @@
+"""
+Thanks the lord for: https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
+it allowed me to test every function pretty much
+
+This is the file that contains the final AES encrypt and decrypt functions
+"""
 
 from shiftRow import shiftRow,listToInt,invShiftRow
 from keyExpansion import keyExpansion
@@ -100,9 +106,9 @@ def AES_decrypt(base64EncodedText,initialKey:int):
             if padding == 16:
                 plaintext.append('')
             else:
-                plaintext.append(a.to_bytes(16).decode()[0:16-padding])
+                plaintext.append(a.to_bytes(16).decode()[0:16-padding]) # cuts off the padding bits of the last chunk
         else:
-            plaintext.append(a.to_bytes(16).decode())
+            plaintext.append(a.to_bytes(16).decode()) # only the last chunk has padding the rest can just be added to output directly
     return ''.join(plaintext)
 
 
@@ -116,11 +122,6 @@ if __name__ == '__main__':
     print(f'Key: {hex(key)}',end='\n\n')
     initialText = 'Two One Nine Two'
     cipherText = AES_encrypt(initialText,key)
-    print(f'Cipher text: {cipherText}')
-    plaintext = AES_decrypt(cipherText,key)
-    print(f'Plaintext: {plaintext}',end='\n\n')
-    newText = 'Some big booty latinas bouncing on my dick'
-    cipherText = AES_encrypt(newText,key)
     print(f'Cipher text: {cipherText}')
     plaintext = AES_decrypt(cipherText,key)
     print(f'Plaintext: {plaintext}',end='\n\n')

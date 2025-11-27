@@ -4,12 +4,6 @@ This file should hold both the take input function and the addKey function
 
 import doctest
 
-def takeInput(key = 0x0102030405060708):
-    userInput = input('Plaintext:\n>>> ')
-    for chunk in splitIntoChunks(userInput):
-        addKey(chunk,key)
-        # <-----------------------------------------------
-
 def addKey(text,key):
     """
     Examples:
