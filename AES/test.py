@@ -4,6 +4,7 @@ from keyExpansion import keyExpansion
 from mixColumn import aes_mix_col
 from subBytes import *
 from addRoundKey import *
+import base64
 
 def singleRound(text:str,initialKey:int|str):
     """
@@ -36,9 +37,12 @@ def AES(text:str,initialKey:int,debug:bool = False):
     0x5847088b15b61cba59d4e2e8cd39dfce
     0x43c6a9620e57c0c80908ebfe3df87f37
     0x29c3505f571420f6402299b31a02d73a
-    ['0x29c3505f571420f6402299b31a02d73a',0xb3e46f11ba8d2b97c18769449a89e868]
+    0xd8bbae0fc510ef90ef52a9a4f4060029
+    0xa72dc2ec856f4bf1e61596587679dc87
+    0xb3e46f11ba8d2b97c18769449a89e868
+    b'KcNQX1cUIPZAIpmzGgLXOrPkbxG6jSuXwYdpRJqJ6Gg='
     """
-    encryptedText = []
+    encryptedText = bytes()
     for textChunk in splitIntoChunks(text):
         textIntFormat = listToInt(list(textChunk.encode()),16)
         keys = keyExpansion(initialKey)
@@ -58,8 +62,18 @@ def AES(text:str,initialKey:int,debug:bool = False):
             a = addKey(a,key)
             if debug and round in [1,2,10]:
                 print(hex(a))
-        encryptedText.append(hex(a))
-    return encryptedText
+        encryptedText += a.to_bytes(16)
+    return base64.b64encode(encryptedText)
+
+def unBase64Encode(b64EncodedText):
+    """
+    Examples:
+    >>> list(hex(i) for i in unBase64Encode(b'KcNQX1cUIPZAIpmzGgLXOrPkbxG6jSuXwYdpRJqJ6Gg='))
+    ['0x29c3505f571420f6402299b31a02d73a', '0xb3e46f11ba8d2b97c18769449a89e868']
+    """
+    byteList = base64.b64decode(b64EncodedText)
+    return list(listToInt(list(byteList[i:i+16]),16) for i in range(0,len(byteList),16))
+
 
 
 
