@@ -32,21 +32,17 @@ def shiftRow(bigInt:int):
             BL[8],BL[13],BL[2],BL[7],
             BL[12],BL[1],BL[6],BL[11]],16)
 
-def circularShiftLeft(listThing:list, by = 1):
+def invShiftRow(bigInt:int):
     """
-    Both returns adajusted list and changes list in place
-    Examples:
-    >>> a = [1,2,3,4]
-    >>> circularShiftLeft(a)
-    [2, 3, 4, 1]
-    >>> a
-    [2, 3, 4, 1]
-    >>> circularShiftLeft([1,2,3,4],2)
-    [3, 4, 1, 2]
+    remember that this accepts one big int and not rows
+    >>> hex(invShiftRow(0x632fafa2eb93c7209f92abcba0c0302b))
+    '0x63c0ab20eb2f30cb9f93af2ba092c7a2'
     """
-    for _ in range(by):
-        listThing.append(listThing.pop(0))
-    return listThing
+    BL = list(bigInt.to_bytes(16)) # ByteList
+    return listToInt([BL[0],BL[13],BL[10],BL[7],
+                     BL[4],BL[1],BL[14],BL[11],
+                     BL[8],BL[5],BL[2],BL[15],
+                     BL[12],BL[9],BL[6],BL[3]],16)
 
 if __name__ == '__main__':
     print(doctest.testmod())

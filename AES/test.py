@@ -1,7 +1,7 @@
 
-from shiftRow import shiftRow,listToInt
+from shiftRow import shiftRow,listToInt,invShiftRow
 from keyExpansion import keyExpansion
-from mixColumn import aes_mix_col
+from mixColumn import aes_mix_col,aes_inv_mix_col
 from subBytes import *
 from addRoundKey import *
 import base64
@@ -74,14 +74,53 @@ def base64Decode(b64EncodedText):
     byteList = base64.b64decode(b64EncodedText)
     return list(listToInt(list(byteList[i:i+16]),16) for i in range(0,len(byteList),16))
 
-def AES_decrypt(base64EncodedText):
+def AES_decrypt(base64EncodedText,initialKey:int):
+    """
+    >>> AES_decrypt(b'KcNQX1cUIPZAIpmzGgLXOrPkbxG6jSuXwYdpRJqJ6Gg=',0x5468617473206D79204B756E67204675)
+    'Two One Nine Two'
+    """
     encryptedText = base64Decode(base64EncodedText)
+    keys = keyExpansion(initialKey)
+    keys.reverse() # we have to use the keys in opposite order now
+    
+    plaintext = []
+
+    for textChunk in encryptedText:
+        for round,key in enumerate(keys):
+            if round == 0:
+                a = addKey(textChunk,key)
+                continue
+            a = invShiftRow(a)
+            a = invSubBytes(a)
+            a = addKey(a,key)
+            if round != 10:
+                a = aes_inv_mix_col(a) # i know that these are different naming convention but i lost my mind when i made this function
+        if textChunk is encryptedText[-1]:
+            padding = a.to_bytes(16)[-1]
+            if padding == 16:
+                plaintext.append('')
+            else:
+                plaintext.append(a.to_bytes(16).decode()[0:16-padding])
+        else:
+            plaintext.append(a.to_bytes(16).decode())
+    return ''.join(plaintext)
+
+
 
 
 
 if __name__ == '__main__':
-    print(doctest.testmod())
+    print(doctest.testmod(),end='\n\n')
 
     key = 0x6162636465666768696a6b6C6D6E6F70
+    print(f'Key: {hex(key)}',end='\n\n')
     initialText = 'Two One Nine Two'
-    print(AES_encrypt(initialText,key))
+    cipherText = AES_encrypt(initialText,key)
+    print(f'Cipher text: {cipherText}')
+    plaintext = AES_decrypt(cipherText,key)
+    print(f'Plaintext: {plaintext}',end='\n\n')
+    newText = 'Some big booty latinas bouncing on my dick'
+    cipherText = AES_encrypt(newText,key)
+    print(f'Cipher text: {cipherText}')
+    plaintext = AES_decrypt(cipherText,key)
+    print(f'Plaintext: {plaintext}',end='\n\n')
