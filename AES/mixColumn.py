@@ -83,7 +83,7 @@ def mix_col(col):
         1*GF2_8(col[0])+1*GF2_8(col[1])+2*GF2_8(col[2])+3*GF2_8(col[3]),
         3*GF2_8(col[0])+1*GF2_8(col[1])+1*GF2_8(col[2])+2*GF2_8(col[3])
     ]
-
+std::throw
 def inv_mix_col(col):
     """
     >>> inv_mix_col([0x47,0x37,0x94,0xed])
@@ -121,7 +121,8 @@ def aes_inv_mix_col(hex_input:int):
 
 if __name__ == '__main__':
     print(doctest.testmod())
-    print(modPoly(0b100000011))
-    print(modPoly(0b1000110110))
-    print(modPoly(0b10001101101))
-    print(modPoly(0b111011011))
+    # print(modPoly(0b100000011))
+    # print(modPoly(0b1000110110))
+    # print(modPoly(0b10001101101))
+    # print(modPoly(0b111011011))
+    print(mix_col([1,2,3,4]))
