@@ -83,7 +83,7 @@ def mix_col(col):
         1*GF2_8(col[0])+1*GF2_8(col[1])+2*GF2_8(col[2])+3*GF2_8(col[3]),
         3*GF2_8(col[0])+1*GF2_8(col[1])+1*GF2_8(col[2])+2*GF2_8(col[3])
     ]
-std::throw
+
 def inv_mix_col(col):
     """
     >>> inv_mix_col([0x47,0x37,0x94,0xed])
