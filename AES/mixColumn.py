@@ -121,3 +121,7 @@ def aes_inv_mix_col(hex_input:int):
 
 if __name__ == '__main__':
     print(doctest.testmod())
+    print(modPoly(0b100000011))
+    print(modPoly(0b1000110110))
+    print(modPoly(0b10001101101))
+    print(modPoly(0b111011011))
