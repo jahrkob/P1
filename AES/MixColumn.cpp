@@ -5,6 +5,7 @@
 int modPoly(int poly);
 double logTo(int a);
 bool testModPoly();
+bool testGF();
 
 struct GF2_8 {
   int value;
@@ -24,10 +25,14 @@ struct GF2_8 {
     int curSum = 0;
     std::bitset<8> valueByte = other.value; // note that bitsets have index 0 at the least significant bit
     for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
-      curSum ^= valueByte[bitIndex]<<bitIndex * value; // multiply by each bit and xor into the sum
+        curSum ^= (value*valueByte[bitIndex])<<bitIndex; // note if valueByte[index] is 0 nothing gets xor'ed
     };
     return GF2_8(curSum);
   }
+
+    bool operator==(const int& b) {
+        return value == b;
+    }
 
   int operator<<(std::ostream &strm) const {
     return value;
@@ -49,10 +54,14 @@ int main() {
     // the things below are doctests
     if (testModPoly()) {
         std::cout << "modPoly tests passed" << '\n';
+    } else {
+        throw "modPoly tests failed";
     }
-    std::cout << GF2_8(0b10100101) * GF2_8(0b110) << '\n'; //0b11110011
-    std::cout << GF2_8(0b10101010) * GF2_8(0b110) << '\n'; //0b11010001
-    std::cout << GF2_8(0b10111010) * GF2_8(0b110) << '\n'; //0b10110001
+    if (testGF()) {
+        std::cout << "GF2_8 tests passed" << '\n';
+    } else {
+        throw "GF2_8 tests failed";
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,5 +102,25 @@ bool testModPoly() {
 }
 
 bool testGF() {
+    // test multiplication
+    if (!((GF2_8(0b10100101) * GF2_8(0b110)) == 0b11110011)) {
+        throw "GF2_8(165) * GF2_8(6) did not yield result of 243";
+    } else if (!((GF2_8(0b10101010) * GF2_8(0b110)) == 0b11010001)) {
+        throw "GF2_8(170) * GF2_8(6) did not yield result of 209";
+    } else if (!((GF2_8(0b10111010) * GF2_8(0b110)) == 0b10110001)) {
+        throw "GF2_8(186) * GF2_8(6) did not yield result of 177";
+    } 
+
+    // test +/-
+    else if (!((GF2_8(0b10111010) + GF2_8(0b11111010)) == 0b01000000)) {
+        throw "GF2_8(0b10111010) + GF2_8(0b11111010) did not yield result of 0b01000000";
+    } else if (!((GF2_8(0b10111010) - GF2_8(0b11111010)) == 0b01000000)) {
+        throw "GF2_8(0b10111010) - GF2_8(0b11111010) did not yield result of 0b01000000";
+    } 
+    
+    // if no tests failed return true else false
+    else {
+        return true;
+    }
     return false;
 }
