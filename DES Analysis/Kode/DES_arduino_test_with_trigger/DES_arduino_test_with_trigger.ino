@@ -1,4 +1,3 @@
-
 #include <DES.h>
 
 DES des;
@@ -41,7 +40,11 @@ void desTest() {
   // Trigger LOW after encryption
   digitalWrite(TRIGGER_PIN, LOW);
 
-  // Decrypt
+  /*
+  // ================================
+  // Decryption is COMMENTED OUT
+  // ================================
+  
   for (int i = 0; i < 8; i++) {
     in[i] = out[i];
   }
@@ -53,6 +56,7 @@ void desTest() {
   Serial.print(time);
   Serial.println(" micros)");
   printArray(out);
+  */
 }
 
 void printArray(byte output[]) {
