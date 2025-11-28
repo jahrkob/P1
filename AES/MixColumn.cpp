@@ -30,6 +30,15 @@ struct GF2_8 {
     return GF2_8(curSum);
   }
 
+  GF2_8 operator*(const int& other) const {
+    int curSum = 0;
+    std::bitset<8> valueByte = other; // note that bitsets have index 0 at the least significant bit
+    for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
+        curSum ^= (value*valueByte[bitIndex])<<bitIndex; // note if valueByte[index] is 0 nothing gets xor'ed
+    };
+    return GF2_8(curSum);
+  }
+
     bool operator==(const int& b) {
         return value == b;
     }
@@ -48,20 +57,24 @@ std::ostream& operator<<(std::ostream& os, const GF2_8& obj) {
     return os << obj.value;
 }
 
+list<GF2_8> mixCol(int col[]) {
+    GF2_8 list[] = {
+        GF2_8(col[0])*2+GF2_8(col[1])*3+GF2_8(col[2])  +GF2_8(col[3]),
+        GF2_8(col[0])  +GF2_8(col[1])*2+GF2_8(col[2])*3+GF2_8(col[3]),
+        GF2_8(col[0])  +GF2_8(col[1])  +GF2_8(col[2])*2+GF2_8(col[3])*3,
+        GF2_8(col[0])*3+GF2_8(col[1])  +GF2_8(col[2])  +GF2_8(col[3])*2
+    };
+    return list;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int main() {
     // the things below are doctests
-    if (testModPoly()) {
-        std::cout << "modPoly tests passed" << '\n';
-    } else {
-        throw "modPoly tests failed";
-    }
-    if (testGF()) {
-        std::cout << "GF2_8 tests passed" << '\n';
-    } else {
-        throw "GF2_8 tests failed";
-    }
+    if (testModPoly()) {std::cout << "modPoly tests passed" << '\n';} else {throw "modPoly tests failed";}
+    if (testGF()) { std::cout << "GF2_8 tests passed" << '\n';} else {throw "GF2_8 tests failed";}
+    int list[] = {1,2,3,4};
+    std::cout << mixCol(list[0]);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +96,10 @@ int modPoly(int poly) {
     }
     return poly;
 }
+
+
+
+/////////////////////////////////////  TESTING  //////////////////////////////////////////////////////////
 
 /// @brief Tests the modPoly function
 /// @return Returns true if tests passed throws exception otherwise
