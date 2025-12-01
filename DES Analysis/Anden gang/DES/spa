@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
 from scipy import signal
+
+ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Load your trace
 df = pd.read_csv('scope_14.csv')
