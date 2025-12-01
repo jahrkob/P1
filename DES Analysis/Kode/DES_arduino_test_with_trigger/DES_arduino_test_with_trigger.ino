@@ -6,7 +6,7 @@ const int TRIGGER_PIN = 2;  // Trigger pin for oscilloscope
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Hello!");
+  Serial.println("READY");
   pinMode(TRIGGER_PIN, OUTPUT);
   digitalWrite(TRIGGER_PIN, LOW); // Ensure trigger starts LOW
 }
@@ -26,6 +26,7 @@ void desTest() {
 
   // Trigger HIGH before encryption
   digitalWrite(TRIGGER_PIN, HIGH);
+  Serial.println("TRIGGER"); // <-- VIGTIGT til Python
 
   // Encrypt
   Serial.print("Encrypt...");
@@ -39,24 +40,6 @@ void desTest() {
 
   // Trigger LOW after encryption
   digitalWrite(TRIGGER_PIN, LOW);
-
-  /*
-  // ================================
-  // Decryption is COMMENTED OUT
-  // ================================
-  
-  for (int i = 0; i < 8; i++) {
-    in[i] = out[i];
-  }
-  Serial.print("Decrypt...");
-  time = micros();
-  des.decrypt(out, in, key);
-  time = micros() - time;
-  Serial.print("done. (");
-  Serial.print(time);
-  Serial.println(" micros)");
-  printArray(out);
-  */
 }
 
 void printArray(byte output[]) {
@@ -69,3 +52,4 @@ void printArray(byte output[]) {
   }
   Serial.println();
 }
+
