@@ -98,7 +98,7 @@ def inv_mix_col(col):
 
 def aes_mix_col(hex_input:int):
     """
-    >>> hex(aes_mix_col(0x632fafa2eb93c7209f92abcba0c0302b))
+    >>> hex(aes_mix_col(c))
     '0xba75f47a84a48d32e88d060e1b407d5d'
     """
 
