@@ -1,0 +1,209 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from scipy import signal
+
+# Load your trace
+df = pd.read_csv('scope_14.csv')
+x = df['x-axis'].values
+y = df['F1'].values
+
+# Known values from your code
+plaintext = bytes([1, 2, 3, 4, 5, 6, 7, 8])
+key = bytes([0x3b, 0x38, 0x98, 0x37, 0x15, 0x20, 0xf7, 0x5e])
+
+# DES constants from your code (simplified)
+# Initial Permutation (IP) - from ip_permtab
+IP = [
+    58, 50, 42, 34, 26, 18, 10, 2,
+    60, 52, 44, 36, 28, 20, 12, 4,
+    62, 54, 46, 38, 30, 22, 14, 6,
+    64, 56, 48, 40, 32, 24, 16, 8,
+    57, 49, 41, 33, 25, 17, 9, 1,
+    59, 51, 43, 35, 27, 19, 11, 3,
+    61, 53, 45, 37, 29, 21, 13, 5,
+    63, 55, 47, 39, 31, 23, 15, 7
+]
+
+# Expansion (E) - from e_permtab
+E = [
+    32, 1, 2, 3, 4, 5,
+    4, 5, 6, 7, 8, 9,
+    8, 9, 10, 11, 12, 13,
+    12, 13, 14, 15, 16, 17,
+    16, 17, 18, 19, 20, 21,
+    20, 21, 22, 23, 24, 25,
+    24, 25, 26, 27, 28, 29,
+    28, 29, 30, 31, 32, 1
+]
+
+# S-boxes (first 4 rows of each S-box from your code)
+SBOX = [
+    # S1
+    [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
+     0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
+     4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0,
+     15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13],
+    # S2
+    [15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10,
+     3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5,
+     0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15,
+     13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9],
+    # S3
+    [10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8,
+     13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1,
+     13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7,
+     1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12],
+    # S4
+    [7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15,
+     13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9,
+     10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4,
+     3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14],
+    # S5
+    [2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9,
+     14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6,
+     4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14,
+     11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3],
+    # S6
+    [12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11,
+     10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8,
+     9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6,
+     4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13],
+    # S7
+    [4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1,
+     13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6,
+     1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2,
+     6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12],
+    # S8
+    [13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7,
+     1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2,
+     7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
+     2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11]
+]
+
+def apply_permutation(bits, perm):
+    """Apply permutation to bit array"""
+    return [bits[p-1] for p in perm]
+
+def bytes_to_bits(data):
+    """Convert bytes to list of bits (MSB first)"""
+    bits = []
+    for byte in data:
+        bits.extend([(byte >> (7-i)) & 1 for i in range(8)])
+    return bits
+
+def bits_to_int(bits):
+    """Convert bit list to integer"""
+    val = 0
+    for bit in bits:
+        val = (val << 1) | bit
+    return val
+
+def hamming_weight(val):
+    """Calculate Hamming weight of integer"""
+    return bin(val).count('1')
+
+# 1. First, visualize the trace to identify rounds
+plt.figure(figsize=(15, 5))
+plt.plot(x, y, linewidth=0.5)
+plt.xlabel('Time (s)')
+plt.ylabel('Voltage (V)')
+plt.title('Full Power Trace')
+plt.grid(True)
+plt.show()
+
+# 2. Zoom into first ~0.01 seconds to see structure
+plt.figure(figsize=(15, 5))
+plt.plot(x[:5000], y[:5000], linewidth=0.5)
+plt.xlabel('Time (s)')
+plt.ylabel('Voltage (V)')
+plt.title('First 5000 samples')
+plt.grid(True)
+plt.show()
+
+# 3. Find peaks (likely S-box operations)
+peaks, _ = signal.find_peaks(y, height=0.0002, distance=50)
+print(f"Found {len(peaks)} peaks")
+
+# 4. DES SPA attack on first round
+# Apply IP to plaintext
+plaintext_bits = bytes_to_bits(plaintext)
+ip_bits = apply_permutation(plaintext_bits, IP)
+
+# Split into L0 and R0 (32 bits each)
+L0 = ip_bits[:32]
+R0 = ip_bits[32:]
+
+# Expand R0 to 48 bits
+R0_expanded = apply_permutation(R0, E)
+R0_expanded_int = bits_to_int(R0_expanded)
+
+print(f"R0 expanded (48 bits): {hex(R0_expanded_int)}")
+
+# Now we need to find where in the trace the first S-box operations happen
+# Let's look for 8 peaks close together (8 S-boxes)
+
+# Sort peaks by time
+peak_times = x[peaks]
+peak_values = y[peaks]
+
+# Find first cluster of ~8 peaks
+if len(peaks) >= 8:
+    # Assuming first 8 peaks correspond to first round S-boxes
+    sbox_peaks = peaks[:8]
+    sbox_values = y[sbox_peaks]
+    
+    # For each S-box (0-7), try all 64 key guesses
+    print("\nTrying SPA on first 8 peaks (assuming S-box outputs):")
+    print("S-box | Key guess (hex) | Hamming weight | Peak value")
+    print("-" * 50)
+    
+    for sbox_idx in range(8):
+        # Extract 6 bits for this S-box from expanded R0
+        start_bit = sbox_idx * 6
+        sbox_input_bits = R0_expanded[start_bit:start_bit+6]
+        sbox_input = bits_to_int(sbox_input_bits)
+        
+        best_match = None
+        best_diff = float('inf')
+        
+        # Try all 64 possible key guesses for this S-box (6 bits)
+        for key_guess in range(64):
+            # XOR with key guess
+            xor_result = sbox_input ^ key_guess
+            
+            # Apply S-box (using standard DES S-boxes)
+            # Note: This uses standard DES S-boxes, not your custom ones
+            # You would need to extract your actual S-boxes from your code
+            row = ((xor_result & 0x20) >> 4) | (xor_result & 0x01)
+            col = (xor_result & 0x1E) >> 1
+            sbox_output = SBOX[sbox_idx][row*16 + col]
+            
+            # Calculate Hamming weight of output
+            hw = hamming_weight(sbox_output)
+            
+            # Compare with measured peak value (scaled)
+            # Peak values are in volts, need to scale to compare with HW (0-4)
+            scaled_hw = hw * 0.0001  # Rough scaling
+            peak_val = sbox_values[sbox_idx]
+            diff = abs(scaled_hw - peak_val)
+            
+            if diff < best_diff:
+                best_diff = diff
+                best_match = (key_guess, hw, peak_val, diff)
+        
+        if best_match:
+            kg, hw, pv, diff = best_match
+            print(f"S{sbox_idx+1:2}   | 0x{kg:02x} ({kg:2})      | {hw}            | {pv:.6f} (diff: {diff:.6f})")
+
+# 5. Try correlation with expected pattern
+print("\n" + "="*60)
+print("Manual SPA analysis suggestions:")
+print("="*60)
+print("1. Look for 16 repeating patterns (DES rounds)")
+print("2. Within each round, look for 8 smaller 'bumps' (S-box lookups)")
+print("3. The amplitude of each bump relates to Hamming weight of S-box output")
+print("4. First round uses: Sbox(E(R0) ⊕ K1)")
+print(f"5. R0 (after IP) = {hex(bits_to_int(R0))}")
+print(f"6. E(R0) = {hex(R0_expanded_int)}")
+print("7. For each S-box, try key guesses that make HW match trace amplitude")
