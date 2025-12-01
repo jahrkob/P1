@@ -151,6 +151,20 @@ bool testAESMixCol() {
     int in[16] =  {0x63, 0x2f, 0xaf, 0xa2, 0xeb, 0x93, 0xc7, 0x20, 0x9f, 0x92, 0xab, 0xcb, 0xa0, 0xc0, 0x30, 0x2b};
     int out[16];
     int expectedOut[16] = {0xba, 0x75, 0xf4, 0x7a, 0x84, 0xa4, 0x8d, 0x32, 0xe8, 0x8d, 0x06, 0x0e, 0x1b, 0x40, 0x7d, 0x5d};
+    for (int i = 0; i < 16; i++) {
+        int lenOut = String(out[i]).length();
+        int lenExpected = String(out[i]).length();
+        Serial.print(out[i]);
+        for (int j = 0; i < lenOut; i++) {
+            Serial.print(" ");
+        }
+        Serial.print(" - ");
+        Serial.print(out[i]);
+        for (int j = 0; i < lenExpected; i++) {
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
     AESMixCol(in, out);
     //Serial.println(expectedOut);
     //Serial.println(out);
@@ -166,7 +180,7 @@ bool testAESMixCol() {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(2000000);
   Serial.println();
   mainFromCpp();
 }
