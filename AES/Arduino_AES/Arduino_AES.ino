@@ -1,14 +1,12 @@
 #include <Arduino.h>
 #include <math.h>
 
-int modPoly(int poly);
-
 /// @brief GF(2^8) addition of a and b
 int GFadd(int a, int b, int c=0, int d=0) {
     return modPoly(a ^ b ^ c ^ d);
 }
 
-/// @brief GF(2^8) multiplication of a and b
+/// @brief GF(2^8) multiplication of a and bz
 int GFmul(int a, int b) {
     int curSum = 0;
     for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
@@ -25,7 +23,9 @@ void mixCol(int col[4], int out[4]) {
   out[1] = GFadd(col[0]            ,GFmul(col[1],2)    ,GFmul(col[2],3)    ,col[3]);
   out[2] = GFadd(col[0]            ,col[1]             ,GFmul(col[2],2)    ,GFmul(col[3],3));
   out[3] = GFadd(GFmul(col[0],3)   ,col[1]             ,col[2]             ,GFmul(col[3],2));
-};
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -104,34 +104,37 @@ bool testGF() {
 }
 
 bool testMixCol() {
-  int list1[4] = {1,2,3,4};
-  int list2[4] = {0x47,0x37,0x94,0xed};
-  int desiredResult1[4] = {3,4,9,10};
-  int desiredResult2[4] = {0x87, 0x6e, 0x46, 0xa6};
-  int result1[4];
-  mixCol(list1,result1);
-  int result2[4];
-  mixCol(list2,result2);
-  bool returnValue = true; // true unless error then we change to false
-  for (int i = 0; i < 4; i++) {
-      if (result1[i] != desiredResult1[i]) {
-          Serial.println("mixCol({1,2,3,4}) did not yield result of {3,4,9,10}");
-          returnValue = false;
-      }
-  }
-  for (int i = 0; i < 4; i++) {
-    if (result2[i] != desiredResult2[i]) {
-        Serial.println("mixCol({0x47,0x37,0x94,0xed}) did not yield result of {0x87, 0x6e, 0x46, 0xa6}");
-        returnValue = false;
+    int list1[4] = {1,2,3,4};
+    int list2[4] = {0x87, 0x6e, 0x46, 0xa6};
+    int desiredResult1[4] = {3,4,9,10};
+    int desiredResult2[4] = {0x47, 0x37, 0x94, 0xed};
+    int result1[4];
+    mixCol(list1,result1);
+    int result2[4];
+    mixCol(list2,result2);
+    bool returnValue = true; // true unless error then we change to false
+    for (int i = 0; i < 4; i++) {
+        if (result1[i] != desiredResult1[i]) {
+            Serial.print("mixCol({1,2,3,4}) did not yield result of {3,4,9,10} instead got: {"+String(result1[0])+", "+String(result1[1])+", "+String(result1[2])+", "+String(result1[3])+"}");
+            returnValue = false;
+            break;
+        }
     }
-  }
-  return returnValue;
+    for (int i = 0; i < 4; i++) {
+        if (result2[i] != desiredResult2[i]) {
+            Serial.println("mixCol({0x47,0x37,0x94,0xed}) did not yield result of {0x87, 0x6e, 0x46, 0xa6} instead got: {"+String(result2[0])+", "+String(result2[1])+", "+String(result2[2])+", "+String(result2[3])+"}");
+            returnValue = false;
+            break;
+        }
+    }
+    return returnValue;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
   Serial.begin(9600);
+  Serial.println();
   mainFromCpp();
 }
 
