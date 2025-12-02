@@ -134,29 +134,31 @@ void splitIntoChunks() {
     Serial.println("I would rather kms than write this :C");
 }
 
-void AES(uint8_t in[16], uint8_t out[16], uint8_t key[16]) {
+void AES(uint8_t in[16], uint8_t out[16], uint8_t initialKey[16]) {
     uint8_t keys[176];
-    AESKeyExpansion(key,keys);
+    AESKeyExpansion(initialKey,keys);
     uint8_t temp[16];
     for(int i = 0; i < 16; i++) {
         temp[i] = in[i];
     }
-    
+
+    uint8_t roundKey[16];
     for(int i = 0; i < 11; i++) {
         if (i == 0) {
-            AESAddKey(temp,keys[i]);
+            AESAddKey(temp,&keys[0]);
             continue;
         }
         AESSubBytes(temp);
         AESShiftRow(temp);
-        if (round != 10) {
+        if (i != 10) {
             AESMixCol(temp);
         }
-        AESAddKey(temp,key);
+        AESAddKey(temp,&keys[i*16]);
     }
-    for(int i = 0; i < 16; i++) {
-        Serial.println(temp[i], HEX);
-    }
+    for(int j= 0; j < 16; j++) {
+        Serial.print(temp[j]);
+        Serial.print(", ");
+    } Serial.print('\n');
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +180,7 @@ int mainFromCpp() {
     testgFunc();
     testAESKeyExpansion();
     uint8_t out[16];
-    AES(0x9a21a2fd8aa9c0fa66a354d9d0184b598e64ce873f174dbb2423fcd814580e15, out, 0x6162636465666768696a6b6c6d6e6f70);
+    AES(0x54776f204f6e65204e696e652054776f, out, 0x5468617473206D79204B756E67204675);
 }
 
 void setup() {
