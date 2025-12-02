@@ -1,5 +1,21 @@
-#include <Arduino.h>
-#include <math.h>
+
+/// @brief A log2 function
+/// @param a Integer to get log2 of
+/// @return Returns the log2 of a
+double logTo(int a) {
+    return log(a)/log(2);
+}
+
+/// @brief Functions which makes sure any value fits in GF2_8 by using the AES irreducible polynomial 0b100011011
+/// @param poly The value which we want to reduce to fit in GF2_8
+/// @return Reduced poly as integer
+int modPoly(int poly) {
+    while ((poly != 0) && (log10(poly)/log10(2) >= 8)) {
+        int shiftBy = floor(logTo(int(poly)))-8;
+        poly ^= 0b100011011<<shiftBy; // 0b100011011 is the aes irreducible polynomial
+    }
+    return poly;
+}
 
 uint8_t subBytesTable[256] = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -34,56 +50,54 @@ int GFmul(int a, int b) {
     return modPoly(curSum);
 }
 
-/// @brief Does the mix column function for a column
-/// @param col The column to mix
-/// @param out The array which will be edditted to hold the return value of mix col
-void mixCol(int col[4], int out[4]) {
-  out[0] = GFadd(GFmul(col[0],2)   ,GFmul(col[1],3)    ,col[2]             ,col[3]);
-  out[1] = GFadd(col[0]            ,GFmul(col[1],2)    ,GFmul(col[2],3)    ,col[3]);
-  out[2] = GFadd(col[0]            ,col[1]             ,GFmul(col[2],2)    ,GFmul(col[3],3));
-  out[3] = GFadd(GFmul(col[0],3)   ,col[1]             ,col[2]             ,GFmul(col[3],2));
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void AESMixCol(uint8_t in[16], uint8_t out[16]) {
-    out[0] = GFadd(GFmul(in[0],2)   ,GFmul(in[1],3)    ,in[2]             ,in[3]);
-    out[1] = GFadd(in[0]            ,GFmul(in[1],2)    ,GFmul(in[2],3)    ,in[3]);
-    out[2] = GFadd(in[0]            ,in[1]             ,GFmul(in[2],2)    ,GFmul(in[3],3));
-    out[3] = GFadd(GFmul(in[0],3)   ,in[1]             ,in[2]             ,GFmul(in[3],2));
-
-    out[4] = GFadd(GFmul(in[4],2)   ,GFmul(in[5],3)    ,in[6]             ,in[7]);
-    out[5] = GFadd(in[4]            ,GFmul(in[5],2)    ,GFmul(in[6],3)    ,in[7]);
-    out[6] = GFadd(in[4]            ,in[5]             ,GFmul(in[6],2)    ,GFmul(in[7],3));
-    out[7] = GFadd(GFmul(in[4],3)   ,in[5]             ,in[6]             ,GFmul(in[7],2));
-
-    out[8] = GFadd(GFmul(in[8],2)   ,GFmul(in[9],3)    ,in[10]             ,in[11]);
-    out[9] = GFadd(in[8]            ,GFmul(in[9],2)    ,GFmul(in[10],3)    ,in[11]);
-    out[10] = GFadd(in[8]           ,in[9]             ,GFmul(in[10],2)    ,GFmul(in[11],3));
-    out[11] = GFadd(GFmul(in[8],3)  ,in[9]             ,in[10]             ,GFmul(in[11],2));
-
-    out[12] = GFadd(GFmul(in[12],2)  ,GFmul(in[13],3)    ,in[14]             ,in[15]);
-    out[13] = GFadd(in[12]           ,GFmul(in[13],2)    ,GFmul(in[14],3)    ,in[15]);
-    out[14] = GFadd(in[12]           ,in[13]             ,GFmul(in[14],2)    ,GFmul(in[15],3));
-    out[15] = GFadd(GFmul(in[12],3)  ,in[13]             ,in[14]             ,GFmul(in[15],2));
-}
-
-void AESShiftRow(uint8_t in[16], uint8_t out[16]) {
-    out[0]=in[0];   out[1]=in[5];   out[2]=in[10];  out[3]=in[15];
-    out[4]=in[4];   out[5]=in[9];   out[6]=in[14];  out[7]=in[3];
-    out[8]=in[8];   out[9]=in[13];  out[10]=in[2];  out[11]=in[7];
-    out[12]=in[12]; out[13]=in[1];  out[14]=in[6];  out[15]=in[11];
-}
-
-void AESSubBytes(uint8_t in[16], uint8_t out[16]) {
+void AESMixCol(uint8_t inOut[16]) {
+    uint8_t temp[16];
     for (int i = 0; i < 16; i++) {
-        out[i] = subBytesTable[in[i]];
+        temp[i] = inOut[i];
+    }
+
+    inOut[0] = GFadd(GFmul(temp[0],2)   ,GFmul(temp[1],3)    ,temp[2]             ,temp[3]);
+    inOut[1] = GFadd(temp[0]            ,GFmul(temp[1],2)    ,GFmul(temp[2],3)    ,temp[3]);
+    inOut[2] = GFadd(temp[0]            ,temp[1]             ,GFmul(temp[2],2)    ,GFmul(temp[3],3));
+    inOut[3] = GFadd(GFmul(temp[0],3)   ,temp[1]             ,temp[2]             ,GFmul(temp[3],2));
+
+    inOut[4] = GFadd(GFmul(temp[4],2)   ,GFmul(temp[5],3)    ,temp[6]             ,temp[7]);
+    inOut[5] = GFadd(temp[4]            ,GFmul(temp[5],2)    ,GFmul(temp[6],3)    ,temp[7]);
+    inOut[6] = GFadd(temp[4]            ,temp[5]             ,GFmul(temp[6],2)    ,GFmul(temp[7],3));
+    inOut[7] = GFadd(GFmul(temp[4],3)   ,temp[5]             ,temp[6]             ,GFmul(temp[7],2));
+
+    inOut[8] = GFadd(GFmul(temp[8],2)   ,GFmul(temp[9],3)    ,temp[10]             ,temp[11]);
+    inOut[9] = GFadd(temp[8]            ,GFmul(temp[9],2)    ,GFmul(temp[10],3)    ,temp[11]);
+    inOut[10] = GFadd(temp[8]           ,temp[9]             ,GFmul(temp[10],2)    ,GFmul(temp[11],3));
+    inOut[11] = GFadd(GFmul(temp[8],3)  ,temp[9]             ,temp[10]             ,GFmul(temp[11],2));
+
+    inOut[12] = GFadd(GFmul(temp[12],2)  ,GFmul(temp[13],3)    ,temp[14]             ,temp[15]);
+    inOut[13] = GFadd(temp[12]           ,GFmul(temp[13],2)    ,GFmul(temp[14],3)    ,temp[15]);
+    inOut[14] = GFadd(temp[12]           ,temp[13]             ,GFmul(temp[14],2)    ,GFmul(temp[15],3));
+    inOut[15] = GFadd(GFmul(temp[12],3)  ,temp[13]             ,temp[14]             ,GFmul(temp[15],2));
+}
+
+void AESShiftRow(uint8_t inOut[16]) {
+    uint8_t temp[16];
+    for (int i = 0; i < 16; i++){
+        temp[i] = inOut[i];
+    }
+    inOut[0]=temp[0];   inOut[1]=temp[5];   inOut[2]=temp[10];  inOut[3]=temp[15];
+    inOut[4]=temp[4];   inOut[5]=temp[9];   inOut[6]=temp[14];  inOut[7]=temp[3];
+    inOut[8]=temp[8];   inOut[9]=temp[13];  inOut[10]=temp[2];  inOut[11]=temp[7];
+    inOut[12]=temp[12]; inOut[13]=temp[1];  inOut[14]=temp[6];  inOut[15]=temp[11];
+}
+
+void AESSubBytes(uint8_t inOut[16]) {
+    for (int i = 0; i < 16; i++) {
+        inOut[i] = subBytesTable[inOut[i]];
     }
 }
 
-void AESAddKey(uint8_t in[16], uint8_t out[16], uint8_t key[16]) {
+
+void AESAddKey(uint8_t inOut[16], uint8_t key[16]) {
     for (int i = 0; i < 16; i++) {
-        out[i] = in[i] ^ key[i];
+        inOut[i] = inOut[i] ^ key[i];
     }
 }
 
@@ -116,28 +130,33 @@ void AESKeyExpansion(uint8_t key[16], uint8_t out[176]) {
     }
 }
 
+void splitIntoChunks() {
+    Serial.println("I would rather kms than write this :C");
+}
+
 void AES(uint8_t in[16], uint8_t out[16], uint8_t key[16]) {
-
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/// @brief A log2 function
-/// @param a Integer to get log2 of
-/// @return Returns the log2 of a
-double logTo(int a) {
-    return log(a)/log(2);
-}
-
-/// @brief Functions which makes sure any value fits in GF2_8 by using the AES irreducible polynomial 0b100011011
-/// @param poly The value which we want to reduce to fit in GF2_8
-/// @return Reduced poly as integer
-int modPoly(int poly) {
-    while ((poly != 0) && (log10(poly)/log10(2) >= 8)) {
-        int shiftBy = floor(logTo(int(poly)))-8;
-        poly ^= 0b100011011<<shiftBy; // 0b100011011 is the aes irreducible polynomial
+    uint8_t keys[176];
+    AESKeyExpansion(key,keys);
+    uint8_t temp[16];
+    for(int i = 0; i < 16; i++) {
+        temp[i] = in[i];
     }
-    return poly;
+    
+    for(int i = 0; i < 11; i++) {
+        if (i == 0) {
+            AESAddKey(temp,keys[i]);
+            continue;
+        }
+        AESSubBytes(temp);
+        AESShiftRow(temp);
+        if (round != 10) {
+            AESMixCol(temp);
+        }
+        AESAddKey(temp,key);
+    }
+    for(int i = 0; i < 16; i++) {
+        Serial.println(temp[i], HEX);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,15 +169,16 @@ int modPoly(int poly) {
 
 int mainFromCpp() {
     // the things below are doctests
-    if (testModPoly()) {Serial.println("modPoly tests passed");} else {Serial.println("modPoly tests failed");}
-    if (testGF()) {Serial.println("GF2_8 tests passed");} else {Serial.println("GF2_8 tests failed");}
-    if (testMixCol()) {Serial.println("mixCol tests passed");} else {Serial.println("mixCol tests failed");}
+    if (testModPoly()) {Serial.println("modPoly passed tests");} else {Serial.println("modPoly tests failed");}
+    if (testGF()) {Serial.println("GF2_8 passed tests");} else {Serial.println("GF2_8 tests failed");}
     testAESMixCol();
     testAESShiftRow();
     testAESSubBytes();
     testAESAddKey();
     testgFunc();
     testAESKeyExpansion();
+    uint8_t out[16];
+    AES(0x9a21a2fd8aa9c0fa66a354d9d0184b598e64ce873f174dbb2423fcd814580e15, out, 0x6162636465666768696a6b6c6d6e6f70);
 }
 
 void setup() {
@@ -219,64 +239,35 @@ bool testGF() {
     return false;
 }
 
-bool testMixCol() {
-    int list1[4] = {1,2,3,4};
-    int list2[4] = {0x87, 0x6e, 0x46, 0xa6};
-    int desiredResult1[4] = {3,4,9,10};
-    int desiredResult2[4] = {0x47, 0x37, 0x94, 0xed};
-    int result1[4];
-    mixCol(list1,result1);
-    int result2[4];
-    mixCol(list2,result2);
-    bool returnValue = true; // true unless error then we change to false
-    for (int i = 0; i < 4; i++) {
-        if (result1[i] != desiredResult1[i]) {
-            Serial.print("mixCol({1,2,3,4}) did not yield result of {3,4,9,10} instead got: {"+String(result1[0])+", "+String(result1[1])+", "+String(result1[2])+", "+String(result1[3])+"}");
-            returnValue = false;
-            break;
-        }
-    }
-    for (int i = 0; i < 4; i++) {
-        if (result2[i] != desiredResult2[i]) {
-            Serial.println("mixCol({0x47,0x37,0x94,0xed}) did not yield result of {0x87, 0x6e, 0x46, 0xa6} instead got: {"+String(result2[0])+", "+String(result2[1])+", "+String(result2[2])+", "+String(result2[3])+"}");
-            returnValue = false;
-            break;
-        }
-    }
-    return returnValue;
-}
-
 bool testAESMixCol() {
-    uint8_t in[16] =  {0x63, 0x2f, 0xaf, 0xa2, 0xeb, 0x93, 0xc7, 0x20, 0x9f, 0x92, 0xab, 0xcb, 0xa0, 0xc0, 0x30, 0x2b};
-    uint8_t out[16];
+    uint8_t inOut[16] =  {0x63, 0x2f, 0xaf, 0xa2, 0xeb, 0x93, 0xc7, 0x20, 0x9f, 0x92, 0xab, 0xcb, 0xa0, 0xc0, 0x30, 0x2b};
     int lenOut;
     int lenExpected;
     uint8_t expectedOut[16] = {0xba, 0x75, 0xf4, 0x7a, 0x84, 0xa4, 0x8d, 0x32, 0xe8, 0x8d, 0x06, 0x0e, 0x1b, 0x40, 0x7d, 0x5d};
-    AESMixCol(in, out);
+    AESMixCol(inOut);
     for (int i = 0; i < 16; i++) {
-        if (out[i] != expectedOut[i]) {
+        if (inOut[i] != expectedOut[i]) {
             Serial.println("FAILED: AESMixCol tests failed");
-            Serial.print(out[i]);
+            Serial.print(inOut[i]);
             Serial.print(" - ");
             Serial.println(expectedOut[i]);
             return false;
         }
     }
-    Serial.println("AESMixCol tests passed");
+    Serial.println("AESMixCol passed tests");
     return true;
 }
 
 bool testAESShiftRow() {
-    uint8_t in[16] = {0x63, 0xc0, 0xab, 0x20, 0xeb, 0x2f, 0x30, 0xcb, 0x9f, 0x93, 0xaf, 0x2b, 0xa0, 0x92, 0xc7, 0xa2};
-    uint8_t out[16];
+    uint8_t inOut[16] = {0x63, 0xc0, 0xab, 0x20, 0xeb, 0x2f, 0x30, 0xcb, 0x9f, 0x93, 0xaf, 0x2b, 0xa0, 0x92, 0xc7, 0xa2};
     uint8_t expected[16] = {0x63, 0x2f, 0xaf, 0xa2, 0xeb, 0x93, 0xc7, 0x20, 0x9f, 0x92, 0xab, 0xcb, 0xa0, 0xc0, 0x30, 0x2b};
-    AESShiftRow(in, out);
+    AESShiftRow(inOut);
     bool returnValue = true;
     for (int i = 0; i < 16; i++) {
-        //Serial.print(out[i]);
+        //Serial.print(inOut[i]);
         //Serial.print(" - ");
         //Serial.print(expected[i]);
-        if (out[i] != expected[i] && returnValue) {
+        if (inOut[i] != expected[i] && returnValue) {
             Serial.println("\nFAILED: AESShiftRow failed tests");
             returnValue = false;
         } else {
@@ -290,16 +281,15 @@ bool testAESShiftRow() {
 }
 
 bool testAESSubBytes() {
-    uint8_t in[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
-    uint8_t out[16];
+    uint8_t inOut[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
     uint8_t expected[16] = {0x7c, 0x26, 0x6e, 0x85, 0xa7, 0x62, 0xbd, 0xdf, 0x7c, 0x26, 0x6e, 0x85, 0xa7, 0x62, 0xbd, 0xdf};
-    AESSubBytes(in,out);
+    AESSubBytes(inOut);
     bool returnValue = true;
     for (int i = 0; i < 16; i++) {
-        //Serial.print(out[i]);
+        //Serial.print(inOut[i]);
         //Serial.print(" - ");
         //Serial.print(expected[i]);
-        if (out[i] != expected[i] && returnValue) {
+        if (inOut[i] != expected[i] && returnValue) {
             Serial.println("\nFAILED: AESSubBytes failed tests");
             returnValue = false;
         } else {
@@ -313,13 +303,12 @@ bool testAESSubBytes() {
 }
 
 bool testAESAddKey() {
-    uint8_t in[16] = {
+    uint8_t inOut[16] = {
         0x54, 0x77, 0x6f, 0x20,
         0x4f, 0x6e, 0x65, 0x20,
         0x4e, 0x69, 0x6e, 0x65,
         0x20, 0x54, 0x77, 0x6f
     };
-    uint8_t out[16];
     uint8_t key[16] = {
         0x54, 0x68, 0x61, 0x74,
         0x73, 0x20, 0x6d, 0x79,
@@ -332,13 +321,13 @@ bool testAESAddKey() {
         0x6e, 0x22, 0x1b, 0x0b, 
         0x47, 0x74, 0x31, 0x1a
     };
-    AESAddKey(in,out,key);
+    AESAddKey(inOut,key);
     bool returnValue = true;
     for (int i = 0; i < 16; i++) {
-        //Serial.print(out[i]);
+        //Serial.print(inOut[i]);
         //Serial.print(" - ");
         //Serial.print(expected[i]);
-        if (out[i] != expected[i] && returnValue) {
+        if (inOut[i] != expected[i] && returnValue) {
             //Serial.println("\nFAILED: AESAddKey failed tests");
             returnValue = false;
         } else {
@@ -404,7 +393,7 @@ bool testAESKeyExpansion() {
             //Serial.print('\n');
         }
     }
-    
+
     if (returnValue) {
         Serial.println("AESKeyExpansion passed tests");
     }
