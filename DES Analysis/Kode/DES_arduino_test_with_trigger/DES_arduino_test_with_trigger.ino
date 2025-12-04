@@ -5,7 +5,7 @@ DES des;
 const int TRIGGER_PIN = 2;  // Trigger pin for oscilloscope
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("READY");
   pinMode(TRIGGER_PIN, OUTPUT);
   digitalWrite(TRIGGER_PIN, LOW); // Ensure trigger starts LOW
@@ -26,7 +26,7 @@ void desTest() {
 
   // Trigger HIGH before encryption
   digitalWrite(TRIGGER_PIN, HIGH);
-  Serial.println("TRIGGER"); // <-- VIGTIGT til Python
+  //Serial.println("TRIGGER"); // <-- VIGTIGT til Python
 
   // Encrypt
   Serial.print("Encrypt...");
