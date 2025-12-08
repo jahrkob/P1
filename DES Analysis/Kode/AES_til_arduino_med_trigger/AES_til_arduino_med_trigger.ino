@@ -37,8 +37,8 @@ void setup() {
   // Buffer for decrypted text
   byte decrypted[32];
 
-  Serial.println("=== AES Encryption and Decryption Example ===");
-
+  //Serial.println("=== AES Encryption and Decryption Example ===");
+  
   // ---- Trigger HIGH før kryptering ----
   digitalWrite(triggerPin, HIGH);
 
@@ -51,10 +51,10 @@ void setup() {
       128,                     // Key size in bits
       aes_iv_enc                   // Initialization vector
   );
-
+  delay(2000);
   // ---- Trigger LOW efter kryptering ----
   digitalWrite(triggerPin, LOW);
-  Serial.println("Encryption done.");
+  //Serial.println("Encryption done.");
 
   // Serial.print("Ciphertext (Hex): ");
   // for (size_t i = 0; i < plaintext_len; i++) {
