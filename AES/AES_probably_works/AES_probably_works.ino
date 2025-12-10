@@ -36,4 +36,11 @@ void loop() {
 
   // ---- Trigger LOW efter kryptering ----
   digitalWrite(triggerPin, LOW);
+  Serial.println("Encryption done.");
+  for(int i = 0; i < 16; i++) {
+    if(ciphertext[i] < 16) {
+      Serial.print('0');
+    }
+    Serial.print(ciphertext[i],HEX);
+  }
 }
