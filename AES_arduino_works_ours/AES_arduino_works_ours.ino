@@ -2,7 +2,7 @@
 /// @brief A log2 function
 /// @param a Integer to get log2 of
 /// @return Returns the log2 of a
-double logTo(int a) {
+double log2(int a) {
     return log(a)/log(2);
 }
 
@@ -10,8 +10,8 @@ double logTo(int a) {
 /// @param poly The value which we want to reduce to fit in GF2_8
 /// @return Reduced poly as integer
 int modPoly(int poly) {
-    while ((poly != 0) && (log10(poly)/log10(2) >= 8)) {
-        int shiftBy = floor(logTo(int(poly)))-8;
+    while ((poly != 0) && (poly > 255)) {
+        int shiftBy = floor(log2(int(poly)))-8;
         poly ^= 0b100011011<<shiftBy; // 0b100011011 is the aes irreducible polynomial
     }
     return poly;
