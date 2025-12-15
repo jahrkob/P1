@@ -52,9 +52,7 @@ int GFmul(int a, int b) {
 
 void AESMixCol(uint8_t inOut[16]) {
     uint8_t temp[16];
-    for (int i = 0; i < 16; i++) {
-        temp[i] = inOut[i];
-    }
+    memcpy(temp, inOut, 16);
 
     inOut[0] = GFadd(GFmul(temp[0],2)   ,GFmul(temp[1],3)    ,temp[2]             ,temp[3]);
     inOut[1] = GFadd(temp[0]            ,GFmul(temp[1],2)    ,GFmul(temp[2],3)    ,temp[3]);
@@ -79,9 +77,7 @@ void AESMixCol(uint8_t inOut[16]) {
 
 void AESShiftRow(uint8_t inOut[16]) {
     uint8_t temp[16];
-    for (int i = 0; i < 16; i++){
-        temp[i] = inOut[i];
-    }
+    memcpy(temp, inOut, 16);
     inOut[0]=temp[0];   inOut[1]=temp[5];   inOut[2]=temp[10];  inOut[3]=temp[15];
     inOut[4]=temp[4];   inOut[5]=temp[9];   inOut[6]=temp[14];  inOut[7]=temp[3];
     inOut[8]=temp[8];   inOut[9]=temp[13];  inOut[10]=temp[2];  inOut[11]=temp[7];
@@ -107,9 +103,7 @@ void g(uint8_t ptrPrevLastWord[4], uint8_t out[4],uint8_t constant) {
         subBytes[i] = subBytesTable[int(ptrPrevLastWord[(i+1)%4])]; // Substitute each byte
     }
     subBytes[0] ^= constant;
-    for(int i = 0; i < 4; i++) {
-        out[i] = subBytes[i];
-    }
+    memcpy(out, subBytes, 4);
 }
 
 void AESKeyExpansion(uint8_t key[16], uint8_t out[176]) {
@@ -148,9 +142,7 @@ void AES(uint8_t in[16], uint8_t out[16], uint8_t initialKey[16]) {
         }
         AESSubBytes(temp);
         AESShiftRow(temp);
-        if (i != 10) {
-            AESMixCol(temp);
-        }
+        if (i != 10) {AESMixCol(temp);}
         AESAddKey(temp,&keys[i*16]);
     }
     memcpy(out, temp, 16); // return the encrypted stuff to output array
@@ -165,6 +157,8 @@ void AES(uint8_t in[16], uint8_t out[16], uint8_t initialKey[16]) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int Testing() {
+    Serial.print('\n');
+
     // the things below are doctests
     if (testModPoly()) {Serial.println("modPoly passed tests");} else {Serial.println("modPoly tests failed");}
     if (testGF()) {Serial.println("GF2_8 passed tests");} else {Serial.println("GF2_8 tests failed");}
@@ -174,8 +168,8 @@ int Testing() {
     testAESAddKey();
     testgFunc();
     testAESKeyExpansion();
-    
-    Serial.println('\n');
+
+    Serial.print('\n');
 }
 
 void setup() {
