@@ -100,7 +100,7 @@ void AESAddKey(uint8_t inOut[16], uint8_t key[16]) {
 
 void g(uint8_t ptrPrevLastWord[4], uint8_t out[4],uint8_t constant) {
     uint8_t subBytes[4];
-    for(int i = 0; i < 4; i++) { // starts at 1 eneds at 4 to shift left without shifting left
+    for(int i = 0; i < 4; i++) { // starts at 1 ends at 4 to shift left without shifting left
         subBytes[i] = subBytesTable[int(ptrPrevLastWord[(i+1)%4])]; // Substitute each byte
     }
     subBytes[0] ^= constant;
@@ -109,10 +109,8 @@ void g(uint8_t ptrPrevLastWord[4], uint8_t out[4],uint8_t constant) {
 
 void AESKeyExpansion(uint8_t key[16], uint8_t out[176]) {
     uint8_t RC[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
-    for(int i = 0; i < 16; i++) {
-        // add the initial key to the output list
-        out[i] = key[i];
-    }
+    // add the initial key to the output list
+    memcpy(out, key, 16);
     for(int i = 0; i < 10; i++) {
         uint8_t *prevWords = &out[i*16]; // get reference to previous words start value
         g(&prevWords[12],&out[i*16+16],RC[i]);
@@ -125,13 +123,12 @@ void AESKeyExpansion(uint8_t key[16], uint8_t out[176]) {
     }
 }
 
-void AES_block(uint8_t in[16], uint8_t out[16], uint8_t initialKey[16]) {
+void AESBlock(uint8_t in[16], uint8_t out[16], uint8_t initialKey[16]) {
     uint8_t keys[176];
     AESKeyExpansion(initialKey,keys);
     uint8_t temp[16];
     memcpy(temp, in, 16);
 
-    uint8_t roundKey[16];
     for(int i = 0; i < 11; i++) {
         if (i == 0) {
             AESAddKey(temp,&keys[0]);
@@ -180,7 +177,7 @@ void loop() {
     uint8_t out[16];
     uint8_t in[16]  = "Two One Nine Two";
     uint8_t key[16] = "Thats my Kung Fu";
-    AES_block(in, out, key);
+    AESBlock(in, out, key);
     for(int j= 0; j < 16; j++) {
         if (out[j] < 0x10) {
         Serial.print('0');
@@ -403,7 +400,7 @@ bool testAES_block() {
     uint8_t in[16]  = "Two One Nine Two";
     uint8_t key[16] = "Thats my Kung Fu";
     uint8_t expected[16] = {0x29, 0xC3, 0x50, 0x5F, 0x57, 0x14, 0x20, 0xF6, 0x40, 0x22, 0x99, 0xB3, 0x1A, 0x02, 0xD7, 0x3A};
-    AES_block(in,out,key);
+    AESBlock(in,out,key);
     bool returnValue = true;
     for (int i = 0; i < 16; i++) {
         //Serial.print(out[i+16]);
