@@ -52,8 +52,8 @@ def hypothetical_power_usage(subkey, plain_text_char):
 ########################################
 import numpy as np
 
-traces = np.load('data/might-not-work/traces.npy')
-textins = np.load('data/might-not-work/textins.npy')
+traces = np.load('data/premade/traces.npy')
+textins = np.load('data/premade/textins.npy')
 
 num_traces = np.shape(traces)[0]
 num_points = np.shape(traces)[1]
