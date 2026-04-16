@@ -43,7 +43,7 @@ def hypothetical_power_usage(subkey, plain_text_char):
         SBox [
 
             # The initial round key XOR-ed with the plain text
-            subkey ^ plain_text_char
+            subkey ^ plain_text_char   # SBox(PT ⊕ key_guess)
         ]
     ]
 ########################################
